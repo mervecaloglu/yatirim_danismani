@@ -1,0 +1,148 @@
+{% extends 'advisor/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Hero Section -->
+        <div class="card mb-4">
+            <div class="card-body text-center p-5">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="fas fa-chart-line text-primary me-3"></i>
+                    Kişiselleştirilmiş Yatırım Tavsiyesi
+                </h1>
+                <p class="lead mb-4">
+                    Finansal durumunuza ve risk profilinize göre özel olarak hazırlanmış yatırım önerilerini alın.
+                    Gelecekteki getiri projeksiyonlarını görün ve bilinçli yatırım kararları verin.
+                </p>
+                
+                {% if not user.is_authenticated %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'advisor:register' %}" class="btn btn-primary btn-lg me-md-2">
+                            <i class="fas fa-user-plus me-2"></i>Hemen Başla
+                        </a>
+                        <a href="{% url 'advisor:login' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'advisor:investment_recommendation' %}" class="btn btn-primary btn-lg me-md-2">
+                            <i class="fas fa-chart-pie me-2"></i>Yatırım Tavsiyesi Al
+                        </a>
+                        <a href="{% url 'advisor:profile_edit' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-user-edit me-2"></i>Profilimi Düzenle
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-user-shield fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">Kişiselleştirilmiş Analiz</h5>
+                        <p class="card-text">
+                            Yaşınız, geliriniz ve risk toleransınıza göre özel olarak hesaplanmış yatırım önerileri.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-chart-pie fa-3x text-success"></i>
+                        </div>
+                        <h5 class="card-title">Çeşitli Yatırım Seçenekleri</h5>
+                        <p class="card-text">
+                            Mevduat, altın, hisse senedi ve kripto para arasında optimal dağılım önerileri.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-trending-up fa-3x text-warning"></i>
+                        </div>
+                        <h5 class="card-title">Getiri Projeksiyonları</h5>
+                        <p class="card-text">
+                            1 yıllık ve 5 yıllık getiri tahminleri ile yatırımınızın geleceğini görün.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>
+                    Nasıl Çalışır?
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-3 text-center">
+                        <div class="mb-3">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <span class="fw-bold fs-4">1</span>
+                            </div>
+                        </div>
+                        <h6>Kayıt Olun</h6>
+                        <p class="small text-muted">Hızlı ve güvenli kayıt işlemi ile sisteme giriş yapın.</p>
+                    </div>
+                    
+                    <div class="col-md-3 text-center">
+                        <div class="mb-3">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <span class="fw-bold fs-4">2</span>
+                            </div>
+                        </div>
+                        <h6>Bilgilerinizi Girin</h6>
+                        <p class="small text-muted">Finansal durumunuz ve yatırım tercihlerinizi belirtin.</p>
+                    </div>
+                    
+                    <div class="col-md-3 text-center">
+                        <div class="mb-3">
+                            <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <span class="fw-bold fs-4">3</span>
+                            </div>
+                        </div>
+                        <h6>Risk Profilinizi Belirleyin</h6>
+                        <p class="small text-muted">4 basit soru ile risk toleransınızı ölçün.</p>
+                    </div>
+                    
+                    <div class="col-md-3 text-center">
+                        <div class="mb-3">
+                            <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <span class="fw-bold fs-4">4</span>
+                            </div>
+                        </div>
+                        <h6>Tavsiyenizi Alın</h6>
+                        <p class="small text-muted">Kişiselleştirilmiş yatırım önerinizi görüntüleyin ve PDF olarak indirin.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="alert alert-warning mt-4" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Önemli Uyarı:</strong> Bu platform tarafından sunulan yatırım tavsiyeleri sadece bilgilendirme amaçlıdır. 
+            Yatırım kararlarınızı vermeden önce profesyonel finansal danışmanlık almanız önerilir. 
+            Geçmiş performans gelecekteki sonuçları garanti etmez.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
