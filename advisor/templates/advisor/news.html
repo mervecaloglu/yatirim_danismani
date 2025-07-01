@@ -1,0 +1,59 @@
+{% extends "advisor/base.html" %}
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="fas fa-newspaper me-2"></i> Yatırım Haberleri
+    </h2>
+    {% if all_news %}
+        <div class="row g-4">
+            {% for news in all_news %}
+                <div class="col-lg-6">
+                    <a href="{{ news.link }}" class="text-decoration-none" target="_blank" rel="noopener">
+                        <div class="card news-card h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="card-title mb-0 text-primary fw-bold">
+                                        <i class="fas fa-bolt me-2 text-warning"></i>
+                                        {{ news.title }}
+                                    </h5>
+                                    <span class="badge rounded-pill bg-gradient bg-info text-white small px-3 py-2">
+                                        {{ news.published|slice:":16" }}
+                                    </span>
+                                </div>
+                                <p class="card-text text-dark small">
+                                    {{ news.summary|striptags|truncatechars:140 }}
+                                </p>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center border-0 bg-transparent">
+                                <span class="small text-muted">
+                                    <i class="fas fa-globe me-1"></i>{{ news.source }}
+                                </span>
+                                <span class="badge bg-gradient bg-primary text-white">Detay &rsaquo;</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info mt-4">Şu anda haber bulunamadı.</div>
+    {% endif %}
+</div>
+
+<style>
+.news-card {
+    border-radius: 1rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+    background: linear-gradient(135deg, #f8fafc 80%, #dbeafe 100%);
+    min-height: 200px;
+}
+.news-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 8px 30px rgba(102,126,234,0.18);
+    background: linear-gradient(135deg, #e0c3fc 10%, #8ec5fc 100%);
+}
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+</style>
+{% endblock %}

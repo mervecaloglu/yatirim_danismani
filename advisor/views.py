@@ -14,16 +14,17 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from datetime import datetime
 from pycoingecko import CoinGeckoAPI
+import feedparser  # HABERLER İÇİN
 
 from .forms import CustomUserCreationForm, UserProfileForm, PortfolioForm
 from .models import UserProfile, InvestmentRecommendation, UserInvestmentResult, PortfolioEntry
 
+cg = CoinGeckoAPI()
 
 # Ana Sayfa
 def home(request):
     context = {'title': 'Kişiselleştirilmiş Yatırım Tavsiyesi Sistemi'}
     return render(request, 'advisor/home.html', context)
-
 
 # Kayıt Ol
 def register(request):
@@ -37,7 +38,6 @@ def register(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'advisor/register.html', {'form': form, 'title': 'Kayıt Ol'})
-
 
 # Profil Formu
 @login_required
@@ -58,7 +58,6 @@ def profile_form(request):
             form = UserProfileForm()
     return render(request, 'advisor/profile_form.html', {'form': form, 'title': 'Finansal Bilgiler'})
 
-
 # Profil Düzenle
 @login_required
 def profile_edit(request):
@@ -72,7 +71,6 @@ def profile_edit(request):
     else:
         form = UserProfileForm(instance=profile)
     return render(request, 'advisor/profile_edit.html', {'form': form, 'profile': profile, 'title': 'Finansal Bilgileri Düzenle'})
-
 
 # Yatırım Tavsiyesi Hesaplama
 @login_required
@@ -114,7 +112,6 @@ def investment_recommendation(request):
 
     return redirect('advisor:investment_result', result_id=result.id)
 
-
 # Yatırım Sonucu ve Grafik
 @login_required
 def investment_result(request, result_id):
@@ -125,7 +122,6 @@ def investment_result(request, result_id):
         'chart_data': chart_data,
         'title': 'Yatırım Tavsiyeniz'
     })
-
 
 # Pasta Grafik Oluşturucu
 def create_investment_chart(recommendation):
@@ -152,7 +148,6 @@ def create_investment_chart(recommendation):
     plt.close()
 
     return base64.b64encode(image_png).decode('utf-8')
-
 
 # PDF Rapor İndir
 @login_required
@@ -216,7 +211,6 @@ def download_pdf(request, result_id):
     p.save()
     return response
 
-
 # TradingView destekli Piyasa Fiyatları Paneli
 def piyasa_verileri(request):
     semboller = {
@@ -227,11 +221,55 @@ def piyasa_verileri(request):
     }
     return render(request, 'advisor/piyasa.html', {"semboller": semboller})
 
-
-# Kullanıcı Portföyü Görüntüle ve Ekle
+# Kullanıcı Portföyü Görüntüle ve Ekle + İstatistik Kartları + Varlık Detay Kartları
 @login_required
 def my_portfolio(request):
     entries = PortfolioEntry.objects.filter(user=request.user)
+    symbol_to_id = {
+        'BTCUSDT': 'bitcoin',
+        'ETHUSDT': 'ethereum',
+        # Diğer sembolleri ekleyin
+    }
+
+    portfolio_details = []
+    total_invested = 0
+    total_current_value = 0
+
+    for entry in entries:
+        total_invested += float(entry.amount_usd)
+        coingecko_id = symbol_to_id.get(entry.symbol.upper())
+        current_price = None
+        change_24h = None
+        if coingecko_id:
+            try:
+                prices = cg.get_coin_market_chart_by_id(id=coingecko_id, vs_currency='usd', days=2)['prices']
+                if len(prices) >= 2:
+                    first_price = prices[0][1]
+                    last_price = prices[-1][1]
+                    current_price = last_price
+                    change_24h = ((last_price - first_price) / first_price) * 100
+                else:
+                    current_price = prices[-1][1]
+                    change_24h = 0
+            except Exception:
+                current_price = None
+                change_24h = None
+        current_value = float(entry.amount_usd) * (current_price if current_price else 1)
+        total_current_value += current_value
+
+        portfolio_details.append({
+            'asset_name': entry.asset_name,
+            'amount_usd': entry.amount_usd,
+            'added_at': entry.added_at,
+            'current_price': current_price,
+            'change_24h': change_24h,
+            'current_value': current_value,
+        })
+
+    daily_profit_percent = 0
+    if total_invested > 0:
+        daily_profit_percent = ((total_current_value - total_invested) / total_invested) * 100
+
     if request.method == 'POST':
         form = PortfolioForm(request.POST)
         if form.is_valid():
@@ -244,72 +282,73 @@ def my_portfolio(request):
         form = PortfolioForm()
     context = {
         'form': form,
-        'entries': entries,
+        'entries': portfolio_details,
+        'total_invested': total_invested,
+        'total_current_value': total_current_value,
+        'daily_profit_percent': daily_profit_percent,
         'title': 'Portföyüm'
     }
     return render(request, 'advisor/portfolio.html', context)
 
-
-# CoinGecko API'den veri çekme için
-cg = CoinGeckoAPI()
-
+# Kar/Zarar Grafiği Verisi (API)
 @login_required
 def portfolio_performance_data(request):
     user = request.user
     portfolio = PortfolioEntry.objects.filter(user=user)
-
-    # CoinGecko id listesi ve sembolleri eşleştiriyoruz (gerekirse genişlet)
     symbol_to_id = {
         'BTCUSDT': 'bitcoin',
         'ETHUSDT': 'ethereum',
-        # Portföydeki diğer semboller eklenmeli
+        # Gerekirse ekleyin
     }
-
-    # Günlük toplam portföy değerini tutacak dict { 'YYYY-MM-DD': toplam_deger }
     daily_totals = {}
-
     for entry in portfolio:
         coingecko_id = symbol_to_id.get(entry.symbol.upper())
         if not coingecko_id:
             continue
-
-        # Son 7 günün fiyat verisini çek
         prices = cg.get_coin_market_chart_by_id(id=coingecko_id, vs_currency='usd', days=7)['prices']
-
-        # prices -> [[timestamp, price], ...]
-
-        # Her gün için fiyatları tarih bazında topla
         for timestamp, price in prices:
-            date_str = datetime.datetime.fromtimestamp(timestamp / 1000).strftime('%Y-%m-%d')
-            # Kullanıcının o varlıktaki miktarı * fiyat
+            date_str = datetime.fromtimestamp(timestamp / 1000).strftime('%Y-%m-%d')
             value = float(entry.amount_usd) * price
             if date_str in daily_totals:
                 daily_totals[date_str] += value
             else:
                 daily_totals[date_str] = value
-
-    # Tarih sırasına göre sırala
     sorted_dates = sorted(daily_totals.keys())
     sorted_values = [daily_totals[date] for date in sorted_dates]
-
-    # Günlük kar/zararı hesapla: Bugünkü değer - önceki günün değeri
     daily_changes = []
     for i in range(len(sorted_values)):
         if i == 0:
-            daily_changes.append(0)  # İlk gün için değişim 0
+            daily_changes.append(0)
         else:
             change = sorted_values[i] - sorted_values[i-1]
             daily_changes.append(round(change, 2))
-
     data = {
         'dates': sorted_dates,
         'total_values': sorted_values,
         'daily_changes': daily_changes,
     }
-
     return JsonResponse(data)
-
 
 @login_required
 def portfolio_performance_view(request):
     return render(request, 'advisor/portfolio_performance.html', {'title': 'Portföy Performans Grafiği'})
+
+# Haberler View (RSS ile Apikey’siz)
+def news(request):
+    rss_urls = [
+        'https://tr.investing.com/rss/news_285.rss',  # Investing.com - Ekonomi Haberleri Türkçe
+        'https://feeds.finance.yahoo.com/rss/2.0/headline?s=BTC-USD,ETH-USD,TSLA,AAPL&region=US&lang=en-US',
+    ]
+    all_news = []
+    for url in rss_urls:
+        feed = feedparser.parse(url)
+        for entry in feed.entries:
+            all_news.append({
+                'title': entry.title,
+                'link': entry.link,
+                'summary': entry.summary if hasattr(entry, 'summary') else '',
+                'published': entry.published if hasattr(entry, 'published') else '',
+                'source': feed.feed.title if hasattr(feed.feed, 'title') else 'Kaynak',
+            })
+    all_news.sort(key=lambda x: x['published'], reverse=True)
+    return render(request, 'advisor/news.html', {'all_news': all_news, 'title': 'Yatırım Haberleri'})

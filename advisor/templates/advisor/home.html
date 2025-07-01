@@ -15,7 +15,7 @@
                     Gelecekteki getiri projeksiyonlarını görün ve bilinçli yatırım kararları verin.
                 </p>
                 {% if not user.is_authenticated %}
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-3">
                         <a href="{% url 'advisor:register' %}" class="btn btn-primary btn-lg me-md-2">
                             <i class="fas fa-user-plus me-2"></i>Hemen Başla
                         </a>
@@ -24,7 +24,7 @@
                         </a>
                     </div>
                 {% else %}
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-3">
                         <a href="{% url 'advisor:investment_recommendation' %}" class="btn btn-primary btn-lg me-md-2">
                             <i class="fas fa-chart-pie me-2"></i>Yatırım Tavsiyesi Al
                         </a>
@@ -33,6 +33,10 @@
                         </a>
                     </div>
                 {% endif %}
+                <!-- Yatırım Haberleri butonu -->
+                <a href="{% url 'advisor:news' %}" class="btn btn-gradient btn-lg shadow mt-2">
+                    <i class="fas fa-newspaper me-2"></i> Yatırım Haberleri
+                </a>
             </div>
         </div>
 

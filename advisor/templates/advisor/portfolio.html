@@ -3,22 +3,71 @@
 <div class="container">
   <h2 class="mb-4">💼 Portföyüm</h2>
 
+  <!-- İstatistik Kartları -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card text-white bg-primary shadow text-center">
+        <div class="card-body">
+          <h5 class="card-title mb-2">Toplam Yatırım</h5>
+          <p class="card-text fs-3">{{ total_invested|floatformat:2 }} USD</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-success shadow text-center">
+        <div class="card-body">
+          <h5 class="card-title mb-2">Güncel Portföy Değeri</h5>
+          <p class="card-text fs-3">{{ total_current_value|floatformat:2 }} USD</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-warning shadow text-center">
+        <div class="card-body">
+          <h5 class="card-title mb-2">Günlük Kar/Zarar (%)</h5>
+          <p class="card-text fs-3">
+            {% if daily_profit_percent >= 0 %}
+              <span style="color: #198754">+{{ daily_profit_percent|floatformat:2 }}%</span>
+            {% else %}
+              <span style="color: #dc3545">{{ daily_profit_percent|floatformat:2 }}%</span>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Varlık Ekle Formu -->
   <form method="post" class="card card-body shadow mb-4">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit" class="btn btn-primary">Varlık Ekle</button>
   </form>
 
+  <!-- Portföy Varlık Kartları -->
   <div class="row">
     {% for entry in entries %}
     <div class="col-md-6 mb-3">
       <div class="card shadow border-0">
-        <div class="card-header bg-info text-white">
+        <div class="card-header bg-info text-white d-flex justify-content-between">
           {{ entry.asset_name }}
+          {% if entry.current_price %}
+          <span class="badge bg-light text-dark">Fiyat: {{ entry.current_price|floatformat:2 }} USD</span>
+          {% endif %}
         </div>
         <div class="card-body">
-          <p>Yatırılan Miktar: <strong>{{ entry.amount_usd }} USD</strong></p>
+          <p>Yatırılan Miktar: <strong>{{ entry.amount_usd|floatformat:2 }} USD</strong></p>
           <p>Eklenme: {{ entry.added_at|date:"d.m.Y H:i" }}</p>
+          {% if entry.current_value %}
+          <p>Güncel Değer: <strong>{{ entry.current_value|floatformat:2 }} USD</strong></p>
+          {% endif %}
+          {% if entry.change_24h is not None %}
+          <p>24s Değişim:
+            <span class="{% if entry.change_24h >= 0 %}text-success{% else %}text-danger{% endif %}">
+              {{ entry.change_24h|floatformat:2 }}%
+            </span>
+          </p>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -31,7 +80,7 @@
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<canvas id="portfolioChart" width="600" height="400" style="background-color: white; border: 1px solid #ccc;"></canvas>
+<canvas id="portfolioChart" width="600" height="400" style="background-color: white; border: 1px solid #ccc; margin-bottom:40px"></canvas>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -41,11 +90,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return response.json();
     })
     .then(data => {
-        // Eğer API'den beklenen daily_changes ve dates varsa bar chart göster
         if (data.daily_changes && data.dates) {
             renderBarChart(data.dates, data.daily_changes);
         } else {
-            // Yoksa fallback olarak test verisiyle line chart göster
+            // Fallback/test verisi:
             const testData = {
                 "BTCUSDT": {
                     "dates": ["2025-06-25", "2025-06-26", "2025-06-27", "2025-06-28"],

@@ -31,5 +31,6 @@ urlpatterns = [
     # Portföy performans verisi API endpoint
     path('portfolio-performance/', views.portfolio_performance_view, name='portfolio_performance'),
     path('portfolio-performance-data/', views.portfolio_performance_data, name='portfolio_performance_data'),
+    path('haberler/', views.news, name='news'),
 
 ]

@@ -103,6 +103,10 @@
             font-size: 1.5rem;
             font-weight: bold;
         }
+        /* Ekstra: Haber başlığı için ikon */
+        .fa-newspaper {
+            color: #764ba2;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -127,6 +131,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'advisor:piyasa' %}">
                             <i class="fas fa-coins me-1"></i>Piyasa
+                        </a>
+                    </li>
+                    <!-- Yeni Haberler Linki -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'advisor:news' %}">
+                            <i class="fas fa-newspaper me-1"></i>Haberler
                         </a>
                     </li>
                     {% if user.is_authenticated %}
