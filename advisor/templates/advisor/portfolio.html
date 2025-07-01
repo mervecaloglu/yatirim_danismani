@@ -27,4 +27,94 @@
     {% endfor %}
   </div>
 </div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<canvas id="portfolioChart" width="600" height="400" style="background-color: white; border: 1px solid #ccc;"></canvas>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    fetch("{% url 'advisor:portfolio_performance_data' %}")
+    .then(response => {
+        if (!response.ok) throw new Error('Veri alınamadı: ' + response.statusText);
+        return response.json();
+    })
+    .then(data => {
+        // Eğer API'den beklenen daily_changes ve dates varsa bar chart göster
+        if (data.daily_changes && data.dates) {
+            renderBarChart(data.dates, data.daily_changes);
+        } else {
+            // Yoksa fallback olarak test verisiyle line chart göster
+            const testData = {
+                "BTCUSDT": {
+                    "dates": ["2025-06-25", "2025-06-26", "2025-06-27", "2025-06-28"],
+                    "prices": [30000, 30500, 31000, 30800]
+                }
+            };
+            const firstSymbol = Object.keys(testData)[0];
+            const chartData = testData[firstSymbol];
+            renderLineChart(chartData.dates, chartData.prices, firstSymbol + ' Fiyat (USD)');
+        }
+    })
+    .catch(error => {
+        console.error('Hata:', error);
+        alert('Grafik verileri yüklenirken bir hata oluştu.');
+    });
+
+    function renderBarChart(labels, data) {
+        const ctx = document.getElementById('portfolioChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Günlük Kar/Zarar (USD)',
+                    data: data,
+                    backgroundColor: data.map(val => val >= 0 ? 'rgba(54, 162, 235, 0.7)' : 'rgba(255, 99, 132, 0.7)'),
+                    borderColor: data.map(val => val >= 0 ? 'rgba(54, 162, 235, 1)' : 'rgba(255, 99, 132, 1)'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: 'Kar/Zarar (USD)' }
+                    },
+                    x: {
+                        title: { display: true, text: 'Tarih' }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderLineChart(labels, data, label) {
+        const ctx = document.getElementById('portfolioChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Tarih' } },
+                    y: { display: true, title: { display: true, text: 'Fiyat (USD)' } }
+                }
+            }
+        });
+    }
+});
+</script>
+
 {% endblock %}

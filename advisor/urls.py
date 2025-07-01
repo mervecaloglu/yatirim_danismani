@@ -24,8 +24,12 @@ urlpatterns = [
     # PDF indirme
     path('result/<int:result_id>/pdf/', views.download_pdf, name='download_pdf'),
 
+    # Piyasa ve portföy sayfaları
     path('piyasa/', views.piyasa_verileri, name='piyasa'),
     path('portfoyum/', views.my_portfolio, name='my_portfolio'),
 
-]
+    # Portföy performans verisi API endpoint
+    path('portfolio-performance/', views.portfolio_performance_view, name='portfolio_performance'),
+    path('portfolio-performance-data/', views.portfolio_performance_data, name='portfolio_performance_data'),
 
+]

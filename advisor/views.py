@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template.loader import get_template
 from decimal import Decimal
 import matplotlib
@@ -12,21 +12,18 @@ import io
 import base64
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-import os
-import requests
-import certifi
 from datetime import datetime
+from pycoingecko import CoinGeckoAPI
 
 from .forms import CustomUserCreationForm, UserProfileForm, PortfolioForm
 from .models import UserProfile, InvestmentRecommendation, UserInvestmentResult, PortfolioEntry
+
 
 # Ana Sayfa
 def home(request):
     context = {'title': 'Kişiselleştirilmiş Yatırım Tavsiyesi Sistemi'}
     return render(request, 'advisor/home.html', context)
+
 
 # Kayıt Ol
 def register(request):
@@ -39,8 +36,8 @@ def register(request):
             return redirect('advisor:profile_form')
     else:
         form = CustomUserCreationForm()
-
     return render(request, 'advisor/register.html', {'form': form, 'title': 'Kayıt Ol'})
+
 
 # Profil Formu
 @login_required
@@ -59,14 +56,13 @@ def profile_form(request):
                 return redirect('advisor:investment_recommendation')
         else:
             form = UserProfileForm()
-
     return render(request, 'advisor/profile_form.html', {'form': form, 'title': 'Finansal Bilgiler'})
+
 
 # Profil Düzenle
 @login_required
 def profile_edit(request):
     profile = get_object_or_404(UserProfile, user=request.user)
-
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=profile)
         if form.is_valid():
@@ -75,8 +71,8 @@ def profile_edit(request):
             return redirect('advisor:investment_recommendation')
     else:
         form = UserProfileForm(instance=profile)
-
     return render(request, 'advisor/profile_edit.html', {'form': form, 'profile': profile, 'title': 'Finansal Bilgileri Düzenle'})
+
 
 # Yatırım Tavsiyesi Hesaplama
 @login_required
@@ -110,7 +106,6 @@ def investment_recommendation(request):
             'projected_return_5_year': projected_return_5_year,
         }
     )
-
     if not created:
         result.investment_amount = investment_amount
         result.projected_return_1_year = projected_return_1_year
@@ -119,17 +114,18 @@ def investment_recommendation(request):
 
     return redirect('advisor:investment_result', result_id=result.id)
 
+
 # Yatırım Sonucu ve Grafik
 @login_required
 def investment_result(request, result_id):
     result = get_object_or_404(UserInvestmentResult, id=result_id, user_profile__user=request.user)
     chart_data = create_investment_chart(result.recommendation)
-
     return render(request, 'advisor/investment_result.html', {
         'result': result,
         'chart_data': chart_data,
         'title': 'Yatırım Tavsiyeniz'
     })
+
 
 # Pasta Grafik Oluşturucu
 def create_investment_chart(recommendation):
@@ -156,6 +152,7 @@ def create_investment_chart(recommendation):
     plt.close()
 
     return base64.b64encode(image_png).decode('utf-8')
+
 
 # PDF Rapor İndir
 @login_required
@@ -219,6 +216,7 @@ def download_pdf(request, result_id):
     p.save()
     return response
 
+
 # TradingView destekli Piyasa Fiyatları Paneli
 def piyasa_verileri(request):
     semboller = {
@@ -228,6 +226,7 @@ def piyasa_verileri(request):
         'THYAO (BIST)': 'BIST:THYAO'
     }
     return render(request, 'advisor/piyasa.html', {"semboller": semboller})
+
 
 # Kullanıcı Portföyü Görüntüle ve Ekle
 @login_required
@@ -249,3 +248,68 @@ def my_portfolio(request):
         'title': 'Portföyüm'
     }
     return render(request, 'advisor/portfolio.html', context)
+
+
+# CoinGecko API'den veri çekme için
+cg = CoinGeckoAPI()
+
+@login_required
+def portfolio_performance_data(request):
+    user = request.user
+    portfolio = PortfolioEntry.objects.filter(user=user)
+
+    # CoinGecko id listesi ve sembolleri eşleştiriyoruz (gerekirse genişlet)
+    symbol_to_id = {
+        'BTCUSDT': 'bitcoin',
+        'ETHUSDT': 'ethereum',
+        # Portföydeki diğer semboller eklenmeli
+    }
+
+    # Günlük toplam portföy değerini tutacak dict { 'YYYY-MM-DD': toplam_deger }
+    daily_totals = {}
+
+    for entry in portfolio:
+        coingecko_id = symbol_to_id.get(entry.symbol.upper())
+        if not coingecko_id:
+            continue
+
+        # Son 7 günün fiyat verisini çek
+        prices = cg.get_coin_market_chart_by_id(id=coingecko_id, vs_currency='usd', days=7)['prices']
+
+        # prices -> [[timestamp, price], ...]
+
+        # Her gün için fiyatları tarih bazında topla
+        for timestamp, price in prices:
+            date_str = datetime.datetime.fromtimestamp(timestamp / 1000).strftime('%Y-%m-%d')
+            # Kullanıcının o varlıktaki miktarı * fiyat
+            value = float(entry.amount_usd) * price
+            if date_str in daily_totals:
+                daily_totals[date_str] += value
+            else:
+                daily_totals[date_str] = value
+
+    # Tarih sırasına göre sırala
+    sorted_dates = sorted(daily_totals.keys())
+    sorted_values = [daily_totals[date] for date in sorted_dates]
+
+    # Günlük kar/zararı hesapla: Bugünkü değer - önceki günün değeri
+    daily_changes = []
+    for i in range(len(sorted_values)):
+        if i == 0:
+            daily_changes.append(0)  # İlk gün için değişim 0
+        else:
+            change = sorted_values[i] - sorted_values[i-1]
+            daily_changes.append(round(change, 2))
+
+    data = {
+        'dates': sorted_dates,
+        'total_values': sorted_values,
+        'daily_changes': daily_changes,
+    }
+
+    return JsonResponse(data)
+
+
+@login_required
+def portfolio_performance_view(request):
+    return render(request, 'advisor/portfolio_performance.html', {'title': 'Portföy Performans Grafiği'})

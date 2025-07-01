@@ -1,0 +1,70 @@
+{% extends 'advisor/base.html' %}
+
+{% block content %}
+<h2>Portföy Günlük Kar/Zarar Grafiği</h2>
+<canvas id="portfolioChart" width="900" height="450"></canvas>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  fetch("{% url 'advisor:portfolio_performance_data' %}")
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Veri alınamadı: ' + response.statusText);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Beklenen data formatı:
+      // {
+      //    "dates": ["2025-06-25", "2025-06-26", ...],
+      //    "daily_changes": [12.5, -5.3, ...]
+      // }
+
+      const ctx = document.getElementById('portfolioChart').getContext('2d');
+
+      // Grafik oluşturma
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.dates,
+          datasets: [{
+            label: 'Günlük Kar/Zarar (USD)',
+            data: data.daily_changes,
+            backgroundColor: data.daily_changes.map(value => value >= 0 
+              ? 'rgba(54, 162, 235, 0.7)' 
+              : 'rgba(255, 99, 132, 0.7)'),
+            borderColor: data.daily_changes.map(value => value >= 0 
+              ? 'rgba(54, 162, 235, 1)' 
+              : 'rgba(255, 99, 132, 1)'),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: false,
+              title: {
+                display: true,
+                text: 'Kar/Zarar (USD)'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Tarih'
+              }
+            }
+          }
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Hata:', error);
+      alert('Grafik verileri yüklenirken bir hata oluştu.');
+    });
+});
+</script>
+{% endblock %}
