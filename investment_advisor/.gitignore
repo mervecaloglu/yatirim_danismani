@@ -1,9 +1,0 @@
-__pycache__/
-*.pyc
-*.pyo
-*.sqlite3
-*.log
-venv/
-.idea/
-.DS_Store
-.env
