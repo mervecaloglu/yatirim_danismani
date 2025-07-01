@@ -14,10 +14,9 @@
                 <p class="text-muted text-center mb-4">
                     Size en uygun yatırım tavsiyesini verebilmemiz için finansal durumunuz ve tercihleriniz hakkında bilgi verin.
                 </p>
-                
                 <form method="post">
                     {% csrf_token %}
-                    
+
                     <!-- Kişisel Bilgiler -->
                     <div class="row mb-4">
                         <div class="col-12">
@@ -25,7 +24,6 @@
                                 <i class="fas fa-user me-2"></i>Kişisel Bilgiler
                             </h5>
                         </div>
-                        
                         <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="{{ form.age.id_for_label }}" class="form-label">
@@ -41,7 +39,6 @@
                                 {% endif %}
                             </div>
                         </div>
-                        
                         <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="{{ form.monthly_income.id_for_label }}" class="form-label">
@@ -57,7 +54,6 @@
                                 {% endif %}
                             </div>
                         </div>
-                        
                         <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="{{ form.current_savings.id_for_label }}" class="form-label">
@@ -74,7 +70,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Yatırım Tercihleri -->
                     <div class="row mb-4">
                         <div class="col-12">
@@ -82,7 +78,6 @@
                                 <i class="fas fa-chart-line me-2"></i>Yatırım Tercihleri
                             </h5>
                         </div>
-                        
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="{{ form.investment_duration.id_for_label }}" class="form-label">
@@ -99,7 +94,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Risk Profili Soruları -->
                     <div class="mb-4">
                         <h5 class="text-primary mb-3">
@@ -108,104 +103,35 @@
                         <p class="text-muted mb-4">
                             Aşağıdaki soruları yanıtlayarak risk toleransınızı belirleyin. Her soru 0-3 arası puanlanır.
                         </p>
-                        
-                        <!-- Soru 1 -->
-                        <div class="risk-question">
-                            <h6 class="mb-3">{{ form.risk_question_1.label }}</h6>
-                            <div class="row">
-                                {% for choice in form.risk_question_1 %}
-                                    <div class="col-md-6 col-lg-3 mb-2">
-                                        <div class="form-check">
-                                            {{ choice.tag }}
-                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                                {{ choice.choice_label }}
-                                            </label>
-                                        </div>
+                        <!-- Her risk sorusu ayrı ayrı yazıldı -->
+                        {% for field in form %}
+                            {% if field.name.startswith "risk_" %}
+                                <div class="risk-question mb-4">
+                                    <h6 class="mb-2">{{ field.label }}</h6>
+                                    <div class="row">
+                                        {% for radio in field %}
+                                            <div class="col-md-6 col-lg-3 mb-2">
+                                                <div class="form-check">
+                                                    {{ radio.tag }}
+                                                    <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                                        {{ radio.choice_label }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
                                     </div>
-                                {% endfor %}
-                            </div>
-                            {% if form.risk_question_1.errors %}
-                                <div class="text-danger small mt-2">
-                                    {% for error in form.risk_question_1.errors %}
-                                        <div>{{ error }}</div>
-                                    {% endfor %}
+                                    {% if field.errors %}
+                                        <div class="text-danger small mt-2">
+                                            {% for error in field.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             {% endif %}
-                        </div>
-                        
-                        <!-- Soru 2 -->
-                        <div class="risk-question">
-                            <h6 class="mb-3">{{ form.risk_question_2.label }}</h6>
-                            <div class="row">
-                                {% for choice in form.risk_question_2 %}
-                                    <div class="col-md-6 col-lg-3 mb-2">
-                                        <div class="form-check">
-                                            {{ choice.tag }}
-                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                                {{ choice.choice_label }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            {% if form.risk_question_2.errors %}
-                                <div class="text-danger small mt-2">
-                                    {% for error in form.risk_question_2.errors %}
-                                        <div>{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Soru 3 -->
-                        <div class="risk-question">
-                            <h6 class="mb-3">{{ form.risk_question_3.label }}</h6>
-                            <div class="row">
-                                {% for choice in form.risk_question_3 %}
-                                    <div class="col-md-6 col-lg-3 mb-2">
-                                        <div class="form-check">
-                                            {{ choice.tag }}
-                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                                {{ choice.choice_label }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            {% if form.risk_question_3.errors %}
-                                <div class="text-danger small mt-2">
-                                    {% for error in form.risk_question_3.errors %}
-                                        <div>{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Soru 4 -->
-                        <div class="risk-question">
-                            <h6 class="mb-3">{{ form.risk_question_4.label }}</h6>
-                            <div class="row">
-                                {% for choice in form.risk_question_4 %}
-                                    <div class="col-md-6 col-lg-3 mb-2">
-                                        <div class="form-check">
-                                            {{ choice.tag }}
-                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                                {{ choice.choice_label }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            {% if form.risk_question_4.errors %}
-                                <div class="text-danger small mt-2">
-                                    {% for error in form.risk_question_4.errors %}
-                                        <div>{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
+                        {% endfor %}
                     </div>
-                    
+
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-save me-2"></i>Kaydet ve Tavsiye Al
@@ -217,4 +143,3 @@
     </div>
 </div>
 {% endblock %}
-

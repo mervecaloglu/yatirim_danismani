@@ -1,0 +1,30 @@
+{% extends "advisor/base.html" %}
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">💼 Portföyüm</h2>
+
+  <form method="post" class="card card-body shadow mb-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Varlık Ekle</button>
+  </form>
+
+  <div class="row">
+    {% for entry in entries %}
+    <div class="col-md-6 mb-3">
+      <div class="card shadow border-0">
+        <div class="card-header bg-info text-white">
+          {{ entry.asset_name }}
+        </div>
+        <div class="card-body">
+          <p>Yatırılan Miktar: <strong>{{ entry.amount_usd }} USD</strong></p>
+          <p>Eklenme: {{ entry.added_at|date:"d.m.Y H:i" }}</p>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>Henüz portföyünüzde varlık yok.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -11,10 +11,9 @@
                     Kişiselleştirilmiş Yatırım Tavsiyesi
                 </h1>
                 <p class="lead mb-4">
-                    Finansal durumunuza ve risk profilinize göre özel olarak hazırlanmış yatırım önerilerini alın.
+                    Finansal durumunuza ve risk profilinize göre özel olarak hazırlanmış yatırım önerilerini alın.<br>
                     Gelecekteki getiri projeksiyonlarını görün ve bilinçli yatırım kararları verin.
                 </p>
-                
                 {% if not user.is_authenticated %}
                     <div class="d-grid gap-2 d-md-flex justify-content-md-center">
                         <a href="{% url 'advisor:register' %}" class="btn btn-primary btn-lg me-md-2">
@@ -37,7 +36,7 @@
             </div>
         </div>
 
-        <!-- Features Section -->
+        <!-- Özellikler (Features) Section -->
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="card h-100">
@@ -52,7 +51,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body text-center">
@@ -66,7 +64,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body text-center">
@@ -77,6 +74,34 @@
                         <p class="card-text">
                             1 yıllık ve 5 yıllık getiri tahminleri ile yatırımınızın geleceğini görün.
                         </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hızlı Erişim Butonları: Portföyüm & Piyasa -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-6 col-lg-5 mb-4">
+                <div class="card text-center shadow border-0 p-4 hover-shadow">
+                    <div class="card-body">
+                        <i class="fas fa-wallet fa-3x mb-3 text-primary"></i>
+                        <h4 class="card-title mb-3">Portföyüm</h4>
+                        <p class="card-text">Varlıklarınızı görüntüleyin ve portföyünüze yeni yatırımlar ekleyin.</p>
+                        <a href="{% url 'advisor:my_portfolio' %}" class="btn btn-gradient btn-lg w-100 fw-bold">
+                            Portföyü Görüntüle
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-5 mb-4">
+                <div class="card text-center shadow border-0 p-4 hover-shadow">
+                    <div class="card-body">
+                        <i class="fas fa-chart-line fa-3x mb-3 text-success"></i>
+                        <h4 class="card-title mb-3">Canlı Piyasa Verileri</h4>
+                        <p class="card-text">Bitcoin, Ethereum, Altın ve BIST hisselerinin anlık fiyatlarını ve grafiklerini inceleyin.</p>
+                        <a href="{% url 'advisor:piyasa' %}" class="btn btn-gradient btn-lg w-100 fw-bold">
+                            Piyasa Verilerini Gör
+                        </a>
                     </div>
                 </div>
             </div>
@@ -101,7 +126,6 @@
                         <h6>Kayıt Olun</h6>
                         <p class="small text-muted">Hızlı ve güvenli kayıt işlemi ile sisteme giriş yapın.</p>
                     </div>
-                    
                     <div class="col-md-3 text-center">
                         <div class="mb-3">
                             <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
@@ -111,7 +135,6 @@
                         <h6>Bilgilerinizi Girin</h6>
                         <p class="small text-muted">Finansal durumunuz ve yatırım tercihlerinizi belirtin.</p>
                     </div>
-                    
                     <div class="col-md-3 text-center">
                         <div class="mb-3">
                             <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
@@ -121,7 +144,6 @@
                         <h6>Risk Profilinizi Belirleyin</h6>
                         <p class="small text-muted">4 basit soru ile risk toleransınızı ölçün.</p>
                     </div>
-                    
                     <div class="col-md-3 text-center">
                         <div class="mb-3">
                             <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
@@ -144,5 +166,25 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
+<style>
+.btn-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff !important;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.75rem 2rem;
+    font-size: 1.15rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(102,126,234,0.1);
+}
+.btn-gradient:hover {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 30px rgba(246,87,108,0.18);
+}
+.hover-shadow:hover {
+    box-shadow: 0 8px 40px 0 rgba(118,75,162,0.12), 0 1.5px 6px 0 rgba(118,75,162,0.14);
+}
+</style>
+{% endblock %}

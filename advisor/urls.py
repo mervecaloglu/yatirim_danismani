@@ -23,5 +23,9 @@ urlpatterns = [
     
     # PDF indirme
     path('result/<int:result_id>/pdf/', views.download_pdf, name='download_pdf'),
+
+    path('piyasa/', views.piyasa_verileri, name='piyasa'),
+    path('portfoyum/', views.my_portfolio, name='my_portfolio'),
+
 ]
 

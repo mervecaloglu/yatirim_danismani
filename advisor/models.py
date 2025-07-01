@@ -2,16 +2,12 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-
 class UserProfile(models.Model):
-    """
-    Kullanıcının finansal bilgilerini ve risk profilini tutan model
-    """
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="Kullanıcı")
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     age = models.PositiveIntegerField(verbose_name="Yaş", validators=[MinValueValidator(18), MaxValueValidator(100)])
     monthly_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Aylık Gelir (TL)")
     current_savings = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Mevcut Birikim (TL)")
-    
+
     # Yatırım süresi seçenekleri
     INVESTMENT_DURATION_CHOICES = [
         ('short', 'Kısa Vadeli (1-2 yıl)'),
@@ -19,33 +15,63 @@ class UserProfile(models.Model):
         ('long', 'Uzun Vadeli (5+ yıl)'),
     ]
     investment_duration = models.CharField(
-        max_length=10, 
-        choices=INVESTMENT_DURATION_CHOICES, 
+        max_length=10,
+        choices=INVESTMENT_DURATION_CHOICES,
         verbose_name="Yatırım Süresi"
     )
-    
-    # Risk profili soruları (0-3 arası puanlama)
-    risk_question_1 = models.PositiveIntegerField(
-        verbose_name="Paranızı kısa sürede harcamayı planlıyor musunuz?",
+
+    # 10 risk sorusu (0-3 arası puanlama)
+    risk_goal = models.PositiveIntegerField(
+        verbose_name="Yatırımınızın temel amacı nedir?",
         validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Kesinlikle evet, 1: Evet, 2: Hayır, 3: Kesinlikle hayır"
+        help_text="0: Kısa vadeli harcama, 1: Beklenmedik durumlar, 2: Varlık artırma, 3: Uzun vadeli büyüme"
     )
-    risk_question_2 = models.PositiveIntegerField(
-        verbose_name="Piyasa dalgalanmalarına ne kadar toleransınız var?",
+    risk_time_horizon = models.PositiveIntegerField(
+        verbose_name="Yatırım süreniz ne kadar?",
         validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Hiç yok, 1: Az, 2: Orta, 3: Çok yüksek"
+        help_text="0: 1 yıldan az, 1: 1-2 yıl, 2: 3-5 yıl, 3: 5+ yıl"
     )
-    risk_question_3 = models.PositiveIntegerField(
-        verbose_name="Yatırımınızın aniden %10 değer kaybetmesi sizi ne kadar rahatsız eder?",
+    risk_drawdown = models.PositiveIntegerField(
+        verbose_name="Yatırımınız %10 değer kaybederse tutumunuz?",
         validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Çok rahatsız eder, 1: Rahatsız eder, 2: Az rahatsız eder, 3: Hiç rahatsız etmez"
+        help_text="0: Hemen satarım, 1: Beklerim, 2: Eklerim, 3: Umursamam"
     )
-    risk_question_4 = models.PositiveIntegerField(
-        verbose_name="Yüksek kazanç için beklemeyi kabul eder misiniz?",
+    risk_opportunity = models.PositiveIntegerField(
+        verbose_name="Yeni yatırım fırsatlarına yaklaşımınız?",
         validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Kesinlikle hayır, 1: Hayır, 2: Evet, 3: Kesinlikle evet"
+        help_text="0: Hiç ilgilenmem, 1: Temkinli, 2: Denerim, 3: Hızlıca yatırım yaparım"
     )
-    
+    risk_market_crash = models.PositiveIntegerField(
+        verbose_name="Piyasa krizi yaşanırsa ne yaparsınız?",
+        validators=[MinValueValidator(0), MaxValueValidator(3)],
+        help_text="0: Çıkarım, 1: Bir kısmını satarım, 2: Aynen devam, 3: Alım yaparım"
+    )
+    risk_emergency_cash = models.PositiveIntegerField(
+        verbose_name="Acil durumda ne kadar nakdiniz var?",
+        validators=[MinValueValidator(0), MaxValueValidator(3)],
+        help_text="0: Hiç, 1: 1-2 ay, 2: 3-5 ay, 3: 6+ ay"
+    )
+    risk_income_dependence = models.PositiveIntegerField(
+        verbose_name="Yatırımdan elde ettiğiniz gelire bağımlılık düzeyiniz?",
+        validators=[MinValueValidator(0), MaxValueValidator(3)],
+        help_text="0: Tamamen, 1: Büyük oranda, 2: Az, 3: Bağımsız"
+    )
+    risk_knowledge = models.PositiveIntegerField(
+        verbose_name="Yatırım bilgisi düzeyiniz?",
+        validators=[MinValueValidator(0), MaxValueValidator(3)],
+        help_text="0: Yok, 1: Az, 2: Orta, 3: İleri"
+    )
+    risk_diversification = models.PositiveIntegerField(
+        verbose_name="Varlık çeşitliliği hakkındaki görüşünüz?",
+        validators=[MinValueValidator(0), MaxValueValidator(3)],
+        help_text="0: Sadece bir varlık, 1: 2-3 varlık, 2: 4-5 varlık, 3: Çok çeşit"
+    )
+    risk_high_risk_pref = models.PositiveIntegerField(
+        verbose_name="Yüksek riskli yatırımlara ilginiz?",
+        validators=[MinValueValidator(0), MaxValueValidator(3)],
+        help_text="0: Hiç, 1: Nadiren, 2: Zaman zaman, 3: Sık sık"
+    )
+
     # Hesaplanan risk profili
     RISK_PROFILE_CHOICES = [
         ('low', 'Düşük Risk'),
@@ -53,120 +79,103 @@ class UserProfile(models.Model):
         ('high', 'Yüksek Risk'),
     ]
     risk_profile = models.CharField(
-        max_length=10, 
-        choices=RISK_PROFILE_CHOICES, 
-        blank=True, 
+        max_length=10,
+        choices=RISK_PROFILE_CHOICES,
+        blank=True,
         null=True,
         verbose_name="Risk Profili"
     )
-    
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Oluşturulma Tarihi")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Güncellenme Tarihi")
-    
+
     class Meta:
         verbose_name = "Kullanıcı Profili"
         verbose_name_plural = "Kullanıcı Profilleri"
-    
+
     def __str__(self):
         return f"{self.user.username} - {self.get_risk_profile_display()}"
-    
+
     def calculate_risk_profile(self):
-        """
-        Risk profili sorularının puanlarına göre risk profilini hesaplar
-        0-4: Düşük Risk, 5-7: Orta Risk, 8+: Yüksek Risk
-        """
         total_score = (
-            self.risk_question_1 + 
-            self.risk_question_2 + 
-            self.risk_question_3 + 
-            self.risk_question_4
+            self.risk_goal +
+            self.risk_time_horizon +
+            self.risk_drawdown +
+            self.risk_opportunity +
+            self.risk_market_crash +
+            self.risk_emergency_cash +
+            self.risk_income_dependence +
+            self.risk_knowledge +
+            self.risk_diversification +
+            self.risk_high_risk_pref
         )
-        
-        if total_score <= 4:
+        if total_score <= 10:
             return 'low'
-        elif total_score <= 7:
+        elif total_score <= 19:
             return 'medium'
         else:
             return 'high'
-    
+
     def save(self, *args, **kwargs):
-        """
-        Kaydetmeden önce risk profilini otomatik hesapla
-        """
         self.risk_profile = self.calculate_risk_profile()
         super().save(*args, **kwargs)
 
 
 class InvestmentRecommendation(models.Model):
-    """
-    Risk profili ve yatırım süresine göre yatırım önerilerini tutan model
-    Admin panelinden düzenlenebilir
-    """
     risk_profile = models.CharField(
-        max_length=10, 
+        max_length=10,
         choices=UserProfile.RISK_PROFILE_CHOICES,
         verbose_name="Risk Profili"
     )
     investment_duration = models.CharField(
-        max_length=10, 
+        max_length=10,
         choices=UserProfile.INVESTMENT_DURATION_CHOICES,
         verbose_name="Yatırım Süresi"
     )
-    
-    # Yatırım türleri ve yüzdeleri
     deposit_percentage = models.PositiveIntegerField(
-        default=0, 
+        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         verbose_name="Mevduat Yüzdesi"
     )
     gold_percentage = models.PositiveIntegerField(
-        default=0, 
+        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         verbose_name="Altın Yüzdesi"
     )
     stock_percentage = models.PositiveIntegerField(
-        default=0, 
+        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         verbose_name="Hisse Senedi Yüzdesi"
     )
     crypto_percentage = models.PositiveIntegerField(
-        default=0, 
+        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         verbose_name="Kripto Para Yüzdesi"
     )
-    
-    # Tahmini yıllık getiri oranı
     expected_annual_return = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
+        max_digits=5,
+        decimal_places=2,
         default=10.00,
         verbose_name="Tahmini Yıllık Getiri (%)"
     )
-    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Oluşturulma Tarihi")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Güncellenme Tarihi")
-    
+
     class Meta:
         verbose_name = "Yatırım Önerisi"
         verbose_name_plural = "Yatırım Önerileri"
         unique_together = ['risk_profile', 'investment_duration']
-    
+
     def __str__(self):
         return f"{self.get_risk_profile_display()} - {self.get_investment_duration_display()}"
-    
+
     def clean(self):
-        """
-        Yüzdelerin toplamının 100 olduğunu kontrol et
-        """
         from django.core.exceptions import ValidationError
         total = self.deposit_percentage + self.gold_percentage + self.stock_percentage + self.crypto_percentage
         if total != 100:
             raise ValidationError("Yatırım türlerinin yüzdeleri toplamı 100 olmalıdır.")
-    
+
     def get_investment_breakdown(self):
-        """
-        Yatırım dağılımını dictionary olarak döndürür
-        """
         return {
             'Mevduat': self.deposit_percentage,
             'Altın': self.gold_percentage,
@@ -176,35 +185,39 @@ class InvestmentRecommendation(models.Model):
 
 
 class UserInvestmentResult(models.Model):
-    """
-    Kullanıcının aldığı yatırım tavsiyesini ve sonuçlarını tutan model
-    """
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, verbose_name="Kullanıcı Profili")
     recommendation = models.ForeignKey(InvestmentRecommendation, on_delete=models.CASCADE, verbose_name="Yatırım Önerisi")
-    
-    # Hesaplanan değerler
     investment_amount = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2, 
+        max_digits=12,
+        decimal_places=2,
         verbose_name="Yatırım Tutarı (TL)"
     )
     projected_return_1_year = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2, 
+        max_digits=12,
+        decimal_places=2,
         verbose_name="1 Yıllık Tahmini Getiri (TL)"
     )
     projected_return_5_year = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2, 
+        max_digits=12,
+        decimal_places=2,
         verbose_name="5 Yıllık Tahmini Getiri (TL)"
     )
-    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Oluşturulma Tarihi")
-    
+
     class Meta:
         verbose_name = "Kullanıcı Yatırım Sonucu"
         verbose_name_plural = "Kullanıcı Yatırım Sonuçları"
-    
+
     def __str__(self):
         return f"{self.user_profile.user.username} - {self.created_at.strftime('%d.%m.%Y')}"
 
+
+class PortfolioEntry(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    asset_name = models.CharField(max_length=50)
+    symbol = models.CharField(max_length=30)
+    amount_usd = models.DecimalField(max_digits=10, decimal_places=2)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.asset_name} - {self.amount_usd} USD"
