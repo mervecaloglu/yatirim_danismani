@@ -49,4 +49,3 @@ def add_decimal(value, arg):
         return Decimal(str(value)) + Decimal(str(arg))
     except (ValueError, TypeError, decimal.InvalidOperation):
         return 0
-

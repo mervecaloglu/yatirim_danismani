@@ -8,7 +8,6 @@ class UserProfile(models.Model):
     monthly_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Aylık Gelir (TL)")
     current_savings = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Mevcut Birikim (TL)")
 
-    # Yatırım süresi seçenekleri
     INVESTMENT_DURATION_CHOICES = [
         ('short', 'Kısa Vadeli (1-2 yıl)'),
         ('medium', 'Orta Vadeli (3-5 yıl)'),
@@ -20,59 +19,58 @@ class UserProfile(models.Model):
         verbose_name="Yatırım Süresi"
     )
 
-    # 10 risk sorusu (0-3 arası puanlama)
+    # Geliştirilmiş risk soruları
     risk_goal = models.PositiveIntegerField(
-        verbose_name="Yatırımınızın temel amacı nedir?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Kısa vadeli harcama, 1: Beklenmedik durumlar, 2: Varlık artırma, 3: Uzun vadeli büyüme"
+        verbose_name="Yatırım yapma amacınız en çok hangisine uygundur?",
+        help_text="0: Günlük harcama için, 1: Güvence için, 2: Varlık artırmak için, 3: Uzun vadeli servet için",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
     risk_time_horizon = models.PositiveIntegerField(
-        verbose_name="Yatırım süreniz ne kadar?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: 1 yıldan az, 1: 1-2 yıl, 2: 3-5 yıl, 3: 5+ yıl"
+        verbose_name="Yatırımı ne kadar süre dokunmadan tutarsınız?",
+        help_text="0: <1 yıl, 1: 1-2 yıl, 2: 3-5 yıl, 3: 5+ yıl",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
     risk_drawdown = models.PositiveIntegerField(
-        verbose_name="Yatırımınız %10 değer kaybederse tutumunuz?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Hemen satarım, 1: Beklerim, 2: Eklerim, 3: Umursamam"
+        verbose_name="Yatırımınız %15 düşerse nasıl davranırsınız?",
+        help_text="0: Satarım, 1: Beklerim, 2: Alırım, 3: Umursamam",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
     risk_opportunity = models.PositiveIntegerField(
-        verbose_name="Yeni yatırım fırsatlarına yaklaşımınız?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Hiç ilgilenmem, 1: Temkinli, 2: Denerim, 3: Hızlıca yatırım yaparım"
+        verbose_name="Yeni yükselen yatırım fırsatlarına yaklaşımınız?",
+        help_text="0: İlgilenmem, 1: Araştırırım, 2: Az yatırırım, 3: Hemen girerim",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
     risk_market_crash = models.PositiveIntegerField(
-        verbose_name="Piyasa krizi yaşanırsa ne yaparsınız?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Çıkarım, 1: Bir kısmını satarım, 2: Aynen devam, 3: Alım yaparım"
+        verbose_name="Ekonomik kriz durumunda tavrınız nedir?",
+        help_text="0: Çıkarım, 1: Kısmen satarım, 2: Beklerim, 3: Alım yaparım",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
     risk_emergency_cash = models.PositiveIntegerField(
-        verbose_name="Acil durumda ne kadar nakdiniz var?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Hiç, 1: 1-2 ay, 2: 3-5 ay, 3: 6+ ay"
+        verbose_name="Acil durumlar için ne kadar nakit ayırırsınız?",
+        help_text="0: Hiç, 1: 1-2 ay, 2: 3-5 ay, 3: 6+ ay",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
     risk_income_dependence = models.PositiveIntegerField(
-        verbose_name="Yatırımdan elde ettiğiniz gelire bağımlılık düzeyiniz?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Tamamen, 1: Büyük oranda, 2: Az, 3: Bağımsız"
+        verbose_name="Yatırım gelirine olan bağımlılığınız?",
+        help_text="0: Tamamen, 1: Büyük ölçüde, 2: Kısmen, 3: Bağımsızım",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
     risk_knowledge = models.PositiveIntegerField(
-        verbose_name="Yatırım bilgisi düzeyiniz?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Yok, 1: Az, 2: Orta, 3: İleri"
+        verbose_name="Yatırım bilgisi düzeyiniz nedir?",
+        help_text="0: Hiç yok, 1: Temel, 2: Orta, 3: İleri",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
     risk_diversification = models.PositiveIntegerField(
-        verbose_name="Varlık çeşitliliği hakkındaki görüşünüz?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Sadece bir varlık, 1: 2-3 varlık, 2: 4-5 varlık, 3: Çok çeşit"
+        verbose_name="Portföy çeşitliliği hakkındaki görüşünüz?",
+        help_text="0: Tek varlık yeter, 1: 2-3 varlık, 2: 4-5 varlık, 3: Mümkünse çok",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
     risk_high_risk_pref = models.PositiveIntegerField(
-        verbose_name="Yüksek riskli yatırımlara ilginiz?",
-        validators=[MinValueValidator(0), MaxValueValidator(3)],
-        help_text="0: Hiç, 1: Nadiren, 2: Zaman zaman, 3: Sık sık"
+        verbose_name="Yüksek riskli yatırımlara yaklaşımınız?",
+        help_text="0: Uzak dururum, 1: Denerim, 2: Kısmen değerlendiririm, 3: Severim",
+        validators=[MinValueValidator(0), MaxValueValidator(3)]
     )
 
-    # Hesaplanan risk profili
     RISK_PROFILE_CHOICES = [
         ('low', 'Düşük Risk'),
         ('medium', 'Orta Risk'),
@@ -97,21 +95,15 @@ class UserProfile(models.Model):
         return f"{self.user.username} - {self.get_risk_profile_display()}"
 
     def calculate_risk_profile(self):
-        total_score = (
-            self.risk_goal +
-            self.risk_time_horizon +
-            self.risk_drawdown +
-            self.risk_opportunity +
-            self.risk_market_crash +
-            self.risk_emergency_cash +
-            self.risk_income_dependence +
-            self.risk_knowledge +
-            self.risk_diversification +
-            self.risk_high_risk_pref
+        score = (
+            self.risk_goal + self.risk_time_horizon + self.risk_drawdown +
+            self.risk_opportunity + self.risk_market_crash + self.risk_emergency_cash +
+            self.risk_income_dependence + self.risk_knowledge +
+            self.risk_diversification + self.risk_high_risk_pref
         )
-        if total_score <= 10:
+        if score <= 12:
             return 'low'
-        elif total_score <= 19:
+        elif score <= 24:
             return 'medium'
         else:
             return 'high'
@@ -119,6 +111,7 @@ class UserProfile(models.Model):
     def save(self, *args, **kwargs):
         self.risk_profile = self.calculate_risk_profile()
         super().save(*args, **kwargs)
+
 
 
 class InvestmentRecommendation(models.Model):

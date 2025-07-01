@@ -61,16 +61,35 @@ def profile_form(request):
 # Profil Düzenle
 @login_required
 def profile_edit(request):
+<<<<<<< HEAD
     profile = get_object_or_404(UserProfile, user=request.user)
+=======
+    try:
+        profile = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        messages.warning(request, "Lütfen önce finansal bilgilerinizi girin.")
+        return redirect('advisor:profile_form')
+
+>>>>>>> c2de4884 (Yerel değişiklikler: yeni sorular, yatırım türleri, form geliştirmeleri)
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Finansal bilgileriniz başarıyla güncellendi!')
+            messages.success(request, 'Bilgileriniz başarıyla güncellendi.')
             return redirect('advisor:investment_recommendation')
     else:
         form = UserProfileForm(instance=profile)
+<<<<<<< HEAD
     return render(request, 'advisor/profile_edit.html', {'form': form, 'profile': profile, 'title': 'Finansal Bilgileri Düzenle'})
+=======
+
+    return render(request, 'advisor/profile_edit.html', {
+        'form': form,
+        'profile': profile,
+        'title': 'Finansal Bilgileri Düzenle'
+    })
+
+>>>>>>> c2de4884 (Yerel değişiklikler: yeni sorular, yatırım türleri, form geliştirmeleri)
 
 # Yatırım Tavsiyesi Hesaplama
 @login_required
@@ -125,18 +144,25 @@ def investment_result(request, result_id):
 
 # Pasta Grafik Oluşturucu
 def create_investment_chart(recommendation):
+    breakdown = recommendation.get_investment_breakdown()
+
     labels = []
     sizes = []
-    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFD93D', '#FF8C94', '#9B59B6', '#F39C12']
 
-    breakdown = recommendation.get_investment_breakdown()
     for investment_type, percentage in breakdown.items():
         if percentage > 0:
             labels.append(f'{investment_type}\n%{percentage}')
             sizes.append(percentage)
 
     plt.figure(figsize=(8, 6))
-    plt.pie(sizes, labels=labels, colors=colors[:len(sizes)], autopct='%1.1f%%', startangle=90)
+    plt.pie(
+        sizes,
+        labels=labels,
+        colors=colors[:len(sizes)],
+        autopct='%1.1f%%',
+        startangle=90
+    )
     plt.title('Önerilen Yatırım Dağılımı', fontsize=16, fontweight='bold')
     plt.axis('equal')
 
@@ -148,6 +174,7 @@ def create_investment_chart(recommendation):
     plt.close()
 
     return base64.b64encode(image_png).decode('utf-8')
+
 
 # PDF Rapor İndir
 @login_required

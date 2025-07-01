@@ -105,7 +105,7 @@
                         </p>
                         <!-- Her risk sorusu ayrı ayrı yazıldı -->
                         {% for field in form %}
-                            {% if field.name.startswith "risk_" %}
+                            {% if "risk_" in field.name %}
                                 <div class="risk-question mb-4">
                                     <h6 class="mb-2">{{ field.label }}</h6>
                                     <div class="row">
